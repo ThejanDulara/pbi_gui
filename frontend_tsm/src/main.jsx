@@ -1,11 +1,10 @@
 // src/main.js
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
 import App from "./App";
-import { checkAuth } from "./authCheck"; // 🔒 authorization check
+import { checkAuth } from "./authCheck";
 
-// 🧠 Immediately show white screen + small message
+// 🧠 Pre-auth screen
 document.body.style.margin = "0";
 document.body.innerHTML = `
   <div id="pre-auth-screen"
@@ -18,7 +17,6 @@ document.body.innerHTML = `
       color:#3bb9af;
       font-family:Arial, sans-serif;
       font-size:18px;
-      letter-spacing:0.5px;
     ">
     Authorization Processing...
   </div>
@@ -26,46 +24,35 @@ document.body.innerHTML = `
 
 async function startApp() {
   const result = await checkAuth();
-  if (!result) return; // redirect handled inside checkAuth
+  if (!result) return;
 
   let authPayload = {};
 
-  // Support both old (boolean) and new (object) styles
   if (typeof result === "object") {
-    const {
-      authorized,
-      userId,
-      firstName,
-      lastName,
-      isAdmin,
-      canUpdateData,
-    } = result;
-
-    if (authorized === false) return;
+    if (result.authorized === false) return;
 
     authPayload = {
-      userId: userId || "",
-      firstName: firstName || "",
-      lastName: lastName || "",
-      isAdmin: !!isAdmin,
-      canUpdateData: !!canUpdateData,
+      userId: result.id || "",
+      firstName: result.first_name || "",
+      lastName: result.last_name || "",
+      isAdmin: !!result.is_admin,
+      canUpdateData: !!result.can_update_data,
+      designation: result.designation || "",
+      email: result.email || "",
+      profilePic: result.profile_pic || "",
     };
   }
 
-  // 🌍 Make auth globally available
   window.__AUTH__ = authPayload;
 
-  // 🧹 Clear pre-auth screen and mount React
+  // 🧹 Clear pre-auth screen
   document.body.innerHTML = `<div id="root"></div>`;
 
   ReactDOM.createRoot(document.getElementById("root")).render(
     <React.StrictMode>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <App />
     </React.StrictMode>
   );
 }
 
-// 🚀 Start application
 startApp();
