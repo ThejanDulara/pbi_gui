@@ -166,6 +166,15 @@ function FilterSelect({ label, value, onChange, options }) {
 }
 
 function DashboardCard({ d, onEdit }) {
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(d.link);
+      alert("Dashboard link copied!");
+    } catch (err) {
+      alert("Failed to copy link");
+    }
+  };
+
   return (
     <div style={R.card}>
       <div style={R.cardHeader}>
@@ -187,12 +196,17 @@ function DashboardCard({ d, onEdit }) {
       </div>
 
       <div style={R.cardFooter}>
-        <span style={R.link}>{d.link}</span>
+        <span style={R.link} title={d.link}>{d.link}</span>
 
         <div style={R.actions}>
+          <button style={R.secondaryBtnSmall} onClick={handleCopy}>
+            Copy Dashboard Link
+          </button>
+
           <button style={R.secondaryBtnSmall} onClick={onEdit}>
             Update
           </button>
+
           <button
             style={R.primaryBtnSmall}
             onClick={() => window.open(d.link, "_blank", "noopener,noreferrer")}
@@ -204,6 +218,7 @@ function DashboardCard({ d, onEdit }) {
     </div>
   );
 }
+
 
 function Meta({ label, value }) {
   return (
