@@ -3,16 +3,19 @@ import { toast } from "react-toastify";
 import { createDashboard } from "../api/client";
 
 export default function AddDashboardDialog({ open, onClose, options, onCreated }) {
-  const [form, setForm] = useState({
-    category: "",
-    client: "",
-    created_by: "",
-    last_updated_date: "",
-    updated_by: "",
-    topic: "",
-    description: "",
-    link: "",
-  });
+    const [form, setForm] = useState({
+      category: "",
+      client: "",
+      data_from: "",
+      data_to: "",
+      created_by: "",
+      last_updated_date: "",
+      updated_by: "",
+      published_account: "",
+      topic: "",
+      description: "",
+      link: "",
+    });
 
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
@@ -111,12 +114,36 @@ export default function AddDashboardDialog({ open, onClose, options, onCreated }
             </Field>
 
             <Field label="Updated By" required>
-              <input style={styles.input}
+              <input
+                list="updated_bys"
+                style={styles.input}
                 value={form.updated_by}
                 onChange={(e) => setField("updated_by", e.target.value)}
               />
+              <datalist id="updated_bys">
+                {(options.updated_bys || []).map(x => (
+                  <option key={x} value={x} />
+                ))}
+              </datalist>
             </Field>
+
           </div>
+
+          <Field label="Published Account (Email)" required>
+              <input
+                type="email"
+                list="published_accounts"
+                style={styles.input}
+                value={form.published_account}
+                onChange={(e) => setField("published_account", e.target.value)}
+              />
+              <datalist id="published_accounts">
+                {(options.published_accounts || []).map(x => (
+                  <option key={x} value={x} />
+                ))}
+              </datalist>
+            </Field>
+
 
           <div style={styles.formRow}>
             <Field label="Last Updated Date" required>
@@ -133,6 +160,27 @@ export default function AddDashboardDialog({ open, onClose, options, onCreated }
               />
             </Field>
           </div>
+          <div style={styles.formRow}>
+
+          <Field label="Data From" required>
+            <input
+              type="date"
+              style={styles.input}
+              value={form.data_from}
+              onChange={(e) => setField("data_from", e.target.value)}
+            />
+          </Field>
+
+          <Field label="Data To" required>
+            <input
+              type="date"
+              style={styles.input}
+              value={form.data_to}
+              onChange={(e) => setField("data_to", e.target.value)}
+            />
+          </Field>
+        </div>
+
 
           <Field label="Description" required>
             <textarea style={styles.textarea}

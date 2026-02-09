@@ -6,6 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Layout from './components/Layout';
 import StartPage from './pages/StartPage';
 import DashboardsPage from './pages/DashboardsPage';
+import Analytics from './pages/Analytics';
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<StartPage />} />
           <Route path="/dashboards" element={<DashboardsPage />} />
+          <Route path="/analytics" element={<Analytics />} />
         </Routes>
       </Layout>
     </BrowserRouter>

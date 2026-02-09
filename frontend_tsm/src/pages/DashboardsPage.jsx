@@ -124,13 +124,13 @@ export default function DashboardsPage() {
         styles={R}
       />
 
-      <UpdateDashboardDialog
-        open={editOpen}
-        dashboard={selectedDashboard}
-        onClose={() => setEditOpen(false)}
-        onUpdated={loadDashboards}
-        styles={R}
-      />
+    <UpdateDashboardDialog
+      open={editOpen}
+      dashboard={selectedDashboard}
+      onClose={() => setEditOpen(false)}
+      onUpdated={loadDashboards}
+      options={options}   // 🔥 ADD THIS
+    />
     </section>
   );
 }
@@ -192,7 +192,13 @@ function DashboardCard({ d, onEdit }) {
           <Meta label="Created By" value={d.created_by} />
           <Meta label="Updated By" value={d.updated_by} />
           <Meta label="Last Updated" value={d.last_updated_date} />
+
+          {/* 🔹 NEW FIELDS */}
+          <Meta label="Data From" value={d.data_from} />
+          <Meta label="Data To" value={d.data_to} />
+          <Meta label="Published Account" value={d.published_account} />
         </div>
+
       </div>
 
       <div style={R.cardFooter}>

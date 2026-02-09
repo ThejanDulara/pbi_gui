@@ -53,6 +53,16 @@ export default function StartPage() {
           <button onClick={() => nav("/dashboards")} style={primaryButton}>
             Go to Dashboards
           </button>
+           <button
+              onClick={() => nav("/analytics")}
+              style={{
+                ...primaryButton,
+                backgroundColor: "#2c6cb0",
+                marginTop: "14px",
+              }}
+            >
+              View Analytics
+            </button>
         </div>
       </div>
     </section>

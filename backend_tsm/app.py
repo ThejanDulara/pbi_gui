@@ -38,16 +38,55 @@ def health():
 @app.get("/api/options")
 def options():
     """
-    Returns distinct values for dropdowns (category, client, created_by).
+    Returns distinct values for dropdowns
     """
     db = SessionLocal()
     try:
-        categories = [r[0] for r in db.execute(select(distinct(Dashboard.category)).order_by(Dashboard.category)).all() if r[0]]
-        clients = [r[0] for r in db.execute(select(distinct(Dashboard.client)).order_by(Dashboard.client)).all() if r[0]]
-        created_bys = [r[0] for r in db.execute(select(distinct(Dashboard.created_by)).order_by(Dashboard.created_by)).all() if r[0]]
-        return jsonify({"ok": True, "categories": categories, "clients": clients, "created_bys": created_bys})
+        categories = [
+            r[0] for r in db.execute(
+                select(distinct(Dashboard.category)).order_by(Dashboard.category)
+            ).all() if r[0]
+        ]
+
+        clients = [
+            r[0] for r in db.execute(
+                select(distinct(Dashboard.client)).order_by(Dashboard.client)
+            ).all() if r[0]
+        ]
+
+        created_bys = [
+            r[0] for r in db.execute(
+                select(distinct(Dashboard.created_by)).order_by(Dashboard.created_by)
+            ).all() if r[0]
+        ]
+
+        # 🔹 NEW
+        published_accounts = [
+            r[0] for r in db.execute(
+                select(distinct(Dashboard.published_account))
+                .order_by(Dashboard.published_account)
+            ).all() if r[0]
+        ]
+
+        updated_bys = [
+            r[0] for r in db.execute(
+                select(distinct(Dashboard.updated_by))
+                .order_by(Dashboard.updated_by)
+            ).all() if r[0]
+        ]
+
+        return jsonify({
+            "ok": True,
+            "categories": categories,
+            "clients": clients,
+            "created_bys": created_bys,
+            "published_accounts": published_accounts,
+            "updated_bys": updated_bys,  # 🔹 NEW
+            "published_accounts": published_accounts  # 🔹 NEW
+        })
     finally:
         db.close()
+
 
 
 @app.get("/api/dashboards")
@@ -81,6 +120,12 @@ def list_dashboards():
                 "id": d.id,
                 "category": d.category,
                 "client": d.client,
+
+                # 🔹 NEW
+                "data_from": d.data_from.isoformat(),
+                "data_to": d.data_to.isoformat(),
+                "published_account": d.published_account,
+
                 "created_by": d.created_by,
                 "last_updated_date": d.last_updated_date.isoformat(),
                 "updated_by": d.updated_by,
@@ -101,8 +146,12 @@ def create_dashboard():
     payload = request.get_json(silent=True) or {}
 
     required_fields = [
-        "category", "client", "created_by",
-        "last_updated_date", "updated_by",
+        "category", "client",
+        "data_from", "data_to",
+        "created_by",
+        "last_updated_date",
+        "updated_by",
+        "published_account",
         "topic", "description", "link"
     ]
 
@@ -120,13 +169,23 @@ def create_dashboard():
         d = Dashboard(
             category=payload["category"].strip(),
             client=payload["client"].strip(),
+
+            # 🔹 NEW
+            data_from=payload["data_from"],
+            data_to=payload["data_to"],
+
             created_by=payload["created_by"].strip(),
-            last_updated_date=payload["last_updated_date"],  # YYYY-MM-DD
+            last_updated_date=payload["last_updated_date"],
             updated_by=payload["updated_by"].strip(),
+
+            # 🔹 NEW
+            published_account=payload["published_account"].strip(),
+
             topic=payload["topic"].strip(),
             description=payload["description"].strip(),
             link=link
         )
+
         db.add(d)
         db.commit()
         db.refresh(d)
@@ -141,7 +200,14 @@ def create_dashboard():
 def update_dashboard(dashboard_id):
     payload = request.get_json(silent=True) or {}
 
-    required_fields = ["description", "last_updated_date", "updated_by"]
+    required_fields = [
+        "description",
+        "last_updated_date",
+        "updated_by",
+        "data_from",
+        "data_to",
+        "published_account"
+    ]
     for f in required_fields:
         if not str(payload.get(f, "")).strip():
             return bad_request(f"'{f}' is required")
@@ -155,6 +221,11 @@ def update_dashboard(dashboard_id):
         d.description = payload["description"].strip()
         d.last_updated_date = payload["last_updated_date"]
         d.updated_by = payload["updated_by"].strip()
+
+        # 🔹 NEW
+        d.data_from = payload["data_from"]
+        d.data_to = payload["data_to"]
+        d.published_account = payload["published_account"].strip()
 
         db.commit()
         return jsonify({"ok": True})

@@ -2,22 +2,29 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { updateDashboard } from "../api/client";
 
-export default function UpdateDashboardDialog({ open, onClose, dashboard, onUpdated }) {
-  const [form, setForm] = useState({
-    description: "",
-    last_updated_date: "",
-    updated_by: "",
-  });
+export default function UpdateDashboardDialog({ open, onClose, dashboard, onUpdated,options }) {
+    const [form, setForm] = useState({
+      description: "",
+      last_updated_date: "",
+      updated_by: "",
+      data_from: "",
+      data_to: "",
+      published_account: "",
+    });
+
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
 
   useEffect(() => {
     if (dashboard) {
-      setForm({
-        description: dashboard.description,
-        last_updated_date: dashboard.last_updated_date,
-        updated_by: dashboard.updated_by,
-      });
+        setForm({
+          description: dashboard.description,
+          last_updated_date: dashboard.last_updated_date,
+          updated_by: dashboard.updated_by,
+          data_from: dashboard.data_from,
+          data_to: dashboard.data_to,
+          published_account: dashboard.published_account,
+        });
       setErr("");
     }
   }, [dashboard]);
@@ -38,6 +45,15 @@ export default function UpdateDashboardDialog({ open, onClose, dashboard, onUpda
     }
     if (!form.updated_by.trim()) {
       setErr("Updated by field is required");
+      return;
+    }
+    if (!form.data_from || !form.data_to) {
+      setErr("Data date range is required");
+      return;
+    }
+
+    if (!form.published_account.trim()) {
+      setErr("Published account is required");
       return;
     }
 
@@ -119,6 +135,29 @@ export default function UpdateDashboardDialog({ open, onClose, dashboard, onUpda
           </div>
 
           <div style={styles.formRow}>
+              <div style={styles.formGroup}>
+                <div style={styles.fieldLabel}>Data From *</div>
+                <input
+                  type="date"
+                  style={styles.input}
+                  value={form.data_from}
+                  onChange={(e) => setForm({ ...form, data_from: e.target.value })}
+                />
+              </div>
+
+              <div style={styles.formGroup}>
+                <div style={styles.fieldLabel}>Data To *</div>
+                <input
+                  type="date"
+                  style={styles.input}
+                  value={form.data_to}
+                  onChange={(e) => setForm({ ...form, data_to: e.target.value })}
+                />
+              </div>
+            </div>
+
+
+          <div style={styles.formRow}>
             <div style={styles.formGroup}>
               <div style={styles.fieldLabel}>
                 Last Updated Date <span style={{ color: "#e53e3e" }}>*</span>
@@ -137,13 +176,38 @@ export default function UpdateDashboardDialog({ open, onClose, dashboard, onUpda
                 Updated By <span style={{ color: "#e53e3e" }}>*</span>
               </div>
               <input
+                list="updated_bys"                 // 🔥 ADD
                 style={styles.input}
                 placeholder="Enter your name"
                 value={form.updated_by}
                 onChange={(e) => setForm({ ...form, updated_by: e.target.value })}
                 disabled={saving}
               />
+              <datalist id="updated_bys">
+                {(options?.updated_bys || []).map((x) => (
+                  <option key={x} value={x} />
+                ))}
+              </datalist>
             </div>
+
+
+        <div style={styles.formGroup}>
+          <div style={styles.fieldLabel}>Published Account *</div>
+          <input
+            type="email"
+            list="published_accounts"          // 🔥 ADD
+            style={styles.input}
+            value={form.published_account}
+            onChange={(e) => setForm({ ...form, published_account: e.target.value })}
+          />
+          <datalist id="published_accounts">
+            {(options?.published_accounts || []).map((x) => (
+              <option key={x} value={x} />
+            ))}
+          </datalist>
+        </div>
+
+
           </div>
         </div>
 
@@ -203,15 +267,22 @@ const styles = {
     zIndex: 1000,
     animation: "fadeIn 0.2s ease-out",
   },
-  modal: {
-    width: "100%",
-    maxWidth: "600px",
-    background: colors.background,
-    borderRadius: "20px",
-    boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
-    animation: "slideUp 0.3s ease-out",
-    overflow: "hidden",
-  },
+    modal: {
+      width: "100%",
+      maxWidth: "600px",
+
+      /* 🔥 SAME FIX AS ADD DIALOG */
+      maxHeight: "90vh",
+      display: "flex",
+      flexDirection: "column",
+
+      background: colors.background,
+      borderRadius: "20px",
+      boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+      animation: "slideUp 0.3s ease-out",
+      overflow: "hidden",
+    },
+
   modalHeader: {
     padding: "24px 32px",
     background: "linear-gradient(135deg, #3182ce 0%, #2c5282 100%)",
@@ -290,9 +361,11 @@ const styles = {
     fontWeight: "600",
     fontSize: "14px",
   },
-  formContent: {
-    padding: "32px",
-  },
+    formContent: {
+      padding: "32px",
+      overflowY: "auto",   // 🔥 enable scrolling
+      flex: 1,             // 🔥 take remaining height
+    },
   formRow: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
