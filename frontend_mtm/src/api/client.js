@@ -35,3 +35,9 @@ export async function updateDashboard(id, payload) {
   });
   return r.json();
 }
+export async function deleteDashboard(id) {
+  const r = await fetch(`${API_BASE}/api/dashboards/${id}`, {
+    method: "DELETE",
+  });
+  return r.json();
+}

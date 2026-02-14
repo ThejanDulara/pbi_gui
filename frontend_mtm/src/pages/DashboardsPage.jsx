@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import AddDashboardDialog from "../components/AddDashboardDialog";
 import UpdateDashboardDialog from "../components/UpdateDashboardDialog";
-import { getDashboards, getOptions } from "../api/client";
+import { getDashboards, getOptions, deleteDashboard } from "../api/client";
+import { checkAuth } from "../authCheck";
+import { toast } from "react-toastify";
 
 export default function DashboardsPage() {
   const [options, setOptions] = useState({ categories: [], clients: [], created_bys: [] });
@@ -13,6 +15,14 @@ export default function DashboardsPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [selectedDashboard, setSelectedDashboard] = useState(null);
   const [search, setSearch] = useState("");
+  const [user, setUser] = useState(null);
+
+  const loadAuth = async () => {
+    const u = await checkAuth();
+    if (u && u.authorized) {
+      setUser(u);
+    }
+  };
 
   const loadOptions = async () => {
     const opt = await getOptions();
@@ -28,6 +38,7 @@ export default function DashboardsPage() {
 
   useEffect(() => {
     loadOptions();
+    loadAuth();
   }, []);
 
   useEffect(() => {
@@ -35,6 +46,22 @@ export default function DashboardsPage() {
   }, [filters.category, filters.client, filters.created_by, search]);
 
   const clearFilters = () => setFilters({ category: "", client: "", created_by: "" });
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this dashboard?")) return;
+    try {
+      const res = await deleteDashboard(id);
+      if (res.ok) {
+        toast.success("Dashboard deleted successfully");
+        loadDashboards();
+      } else {
+        toast.error("Failed to delete dashboard: " + (res.error || "Unknown error"));
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Network error while deleting");
+    }
+  };
 
   return (
     <section style={R.pageWrapper}>
@@ -109,6 +136,8 @@ export default function DashboardsPage() {
                   setSelectedDashboard(d);
                   setEditOpen(true);
                 }}
+                user={user}
+                onDelete={handleDelete}
               />
             ))
           )}
@@ -122,15 +151,16 @@ export default function DashboardsPage() {
         options={options}
         onCreated={loadDashboards}
         styles={R}
+        user={user}
       />
 
-    <UpdateDashboardDialog
-      open={editOpen}
-      dashboard={selectedDashboard}
-      onClose={() => setEditOpen(false)}
-      onUpdated={loadDashboards}
-      options={options}   // 🔥 ADD THIS
-    />
+      <UpdateDashboardDialog
+        open={editOpen}
+        dashboard={selectedDashboard}
+        onClose={() => setEditOpen(false)}
+        onUpdated={loadDashboards}
+        options={options}   // 🔥 ADD THIS
+      />
     </section>
   );
 }
@@ -165,7 +195,7 @@ function FilterSelect({ label, value, onChange, options }) {
   );
 }
 
-function DashboardCard({ d, onEdit }) {
+function DashboardCard({ d, onEdit, user, onDelete }) {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(d.link);
@@ -212,6 +242,16 @@ function DashboardCard({ d, onEdit }) {
           <button style={R.secondaryBtnSmall} onClick={onEdit}>
             Update
           </button>
+
+          {/* Delete Button - only for Admin or Creator */}
+          {(user?.isAdmin || (user?.userId && String(user.userId) === String(d.user_id))) && (
+            <button
+              style={{ ...R.secondaryBtnSmall, background: "#fff5f5", color: "#e53e3e", border: "1px solid #feb2b2" }}
+              onClick={() => onDelete(d.id)}
+            >
+              Delete
+            </button>
+          )}
 
           <button
             style={R.primaryBtnSmall}

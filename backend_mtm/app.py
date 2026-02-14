@@ -19,12 +19,14 @@ CORS(app, resources={r"/api/*": {"origins": frontend_origin}})
 # Create tables (safe on startup)
 Base.metadata.create_all(bind=engine)
 
+
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+
 
 def bad_request(msg):
     return jsonify({"ok": False, "error": msg}), 400
@@ -88,7 +90,6 @@ def options():
         db.close()
 
 
-
 @app.get("/api/dashboards")
 def list_dashboards():
     """
@@ -134,6 +135,10 @@ def list_dashboards():
                 "link": d.link,
                 "created_at": d.created_at.isoformat() if d.created_at else None,
                 "updated_at": d.updated_at.isoformat() if d.updated_at else None,
+
+                "user_id": d.user_id,
+                "user_first_name": d.user_first_name,
+                "user_last_name": d.user_last_name,
             })
 
         return jsonify({"ok": True, "items": data})
@@ -152,7 +157,9 @@ def create_dashboard():
         "last_updated_date",
         "updated_by",
         "published_account",
-        "topic", "description", "link"
+        "published_account",
+        "topic", "description", "link",
+        "user_id"
     ]
 
     for f in required_fields:
@@ -183,7 +190,11 @@ def create_dashboard():
 
             topic=payload["topic"].strip(),
             description=payload["description"].strip(),
-            link=link
+            link=link,
+
+            user_id=payload["user_id"],
+            user_first_name=payload.get("user_first_name"),
+            user_last_name=payload.get("user_last_name")
         )
 
         db.add(d)
@@ -195,6 +206,7 @@ def create_dashboard():
         return jsonify({"ok": False, "error": "Database error"}), 500
     finally:
         db.close()
+
 
 @app.put("/api/dashboards/<int:dashboard_id>")
 def update_dashboard(dashboard_id):
@@ -229,6 +241,24 @@ def update_dashboard(dashboard_id):
 
         db.commit()
         return jsonify({"ok": True})
+    finally:
+        db.close()
+
+
+@app.delete("/api/dashboards/<int:dashboard_id>")
+def delete_dashboard(dashboard_id):
+    db = SessionLocal()
+    try:
+        d = db.get(Dashboard, dashboard_id)
+        if not d:
+            return jsonify({"ok": False, "error": "Dashboard not found"}), 404
+
+        db.delete(d)
+        db.commit()
+        return jsonify({"ok": True})
+    except Exception as e:
+        db.rollback()
+        return jsonify({"ok": False, "error": str(e)}), 500
     finally:
         db.close()
 
