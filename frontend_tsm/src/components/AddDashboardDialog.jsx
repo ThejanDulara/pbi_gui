@@ -2,20 +2,20 @@ import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import { createDashboard } from "../api/client";
 
-export default function AddDashboardDialog({ open, onClose, options, onCreated }) {
-    const [form, setForm] = useState({
-      category: "",
-      client: "",
-      data_from: "",
-      data_to: "",
-      created_by: "",
-      last_updated_date: "",
-      updated_by: "",
-      published_account: "",
-      topic: "",
-      description: "",
-      link: "",
-    });
+export default function AddDashboardDialog({ open, onClose, options, onCreated, user }) {
+  const [form, setForm] = useState({
+    category: "",
+    client: "",
+    data_from: "",
+    data_to: "",
+    created_by: "",
+    last_updated_date: "",
+    updated_by: "",
+    published_account: "",
+    topic: "",
+    description: "",
+    link: "",
+  });
 
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
@@ -47,7 +47,14 @@ export default function AddDashboardDialog({ open, onClose, options, onCreated }
 
     setSaving(true);
     try {
-      const res = await createDashboard(form);
+      const payload = {
+        ...form,
+        user_id: user?.userId || "",
+        user_first_name: user?.firstName || "",
+        user_last_name: user?.lastName || ""
+      };
+
+      const res = await createDashboard(payload);
       if (!res.ok) {
         const msg = res.error || "Failed to add dashboard";
         setErr(msg);
@@ -130,19 +137,19 @@ export default function AddDashboardDialog({ open, onClose, options, onCreated }
           </div>
 
           <Field label="Published Account (Email)" required>
-              <input
-                type="email"
-                list="published_accounts"
-                style={styles.input}
-                value={form.published_account}
-                onChange={(e) => setField("published_account", e.target.value)}
-              />
-              <datalist id="published_accounts">
-                {(options.published_accounts || []).map(x => (
-                  <option key={x} value={x} />
-                ))}
-              </datalist>
-            </Field>
+            <input
+              type="email"
+              list="published_accounts"
+              style={styles.input}
+              value={form.published_account}
+              onChange={(e) => setField("published_account", e.target.value)}
+            />
+            <datalist id="published_accounts">
+              {(options.published_accounts || []).map(x => (
+                <option key={x} value={x} />
+              ))}
+            </datalist>
+          </Field>
 
 
           <div style={styles.formRow}>
@@ -162,24 +169,24 @@ export default function AddDashboardDialog({ open, onClose, options, onCreated }
           </div>
           <div style={styles.formRow}>
 
-          <Field label="Data From" required>
-            <input
-              type="date"
-              style={styles.input}
-              value={form.data_from}
-              onChange={(e) => setField("data_from", e.target.value)}
-            />
-          </Field>
+            <Field label="Data From" required>
+              <input
+                type="date"
+                style={styles.input}
+                value={form.data_from}
+                onChange={(e) => setField("data_from", e.target.value)}
+              />
+            </Field>
 
-          <Field label="Data To" required>
-            <input
-              type="date"
-              style={styles.input}
-              value={form.data_to}
-              onChange={(e) => setField("data_to", e.target.value)}
-            />
-          </Field>
-        </div>
+            <Field label="Data To" required>
+              <input
+                type="date"
+                style={styles.input}
+                value={form.data_to}
+                onChange={(e) => setField("data_to", e.target.value)}
+              />
+            </Field>
+          </div>
 
 
           <Field label="Description" required>
@@ -220,20 +227,20 @@ const styles = {
     justifyContent: "center",
     zIndex: 1000,
   },
-    modal: {
-      width: "100%",
-      maxWidth: 700,
+  modal: {
+    width: "100%",
+    maxWidth: 700,
 
-      /* 🔥 IMPORTANT FIX */
-      maxHeight: "90vh",          // never exceed viewport
-      display: "flex",
-      flexDirection: "column",
+    /* 🔥 IMPORTANT FIX */
+    maxHeight: "90vh",          // never exceed viewport
+    display: "flex",
+    flexDirection: "column",
 
-      background: "#fff",
-      borderRadius: 20,
-      boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
-      overflow: "hidden",
-    },
+    background: "#fff",
+    borderRadius: 20,
+    boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+    overflow: "hidden",
+  },
   modalHeader: {
     padding: "24px 32px",
     background: "linear-gradient(135deg, #3182ce, #2c5282)",
@@ -259,10 +266,10 @@ const styles = {
     fontWeight: 600,
   },
   formContent: {
-      padding: 32,
-      overflowY: "auto",   // 🔥 allow scrolling
-      flex: 1,             // 🔥 take remaining height
-    },
+    padding: 32,
+    overflowY: "auto",   // 🔥 allow scrolling
+    flex: 1,             // 🔥 take remaining height
+  },
   formRow: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",

@@ -15,6 +15,20 @@ export async function checkAuth() {
     ? "http://localhost:5173"
     : "https://www.thirdshiftmedia.agency";
 
+  // 🔹 If localhost, skip auth check and return dummy admin
+  if (isLocal) {
+    console.log("⚠️ Localhost detected: Skipping real auth check");
+    return {
+      authorized: true,
+      userId: "999",
+      firstName: "Local",
+      lastName: "Developer",
+      email: "dev@local.host",
+      isAdmin: true,
+      canUpdateData: true,
+    };
+  }
+
   try {
     const res = await fetch(`${apiBase}/auth/me`, {
       credentials: "include", // include cookies/JWT from master app

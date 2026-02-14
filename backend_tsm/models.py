@@ -9,6 +9,10 @@ class Dashboard(Base):
     category = Column(String(120), nullable=False)
     client = Column(String(120), nullable=False)
 
+    user_id = Column(String(255), nullable=False)
+    user_first_name = Column(String(255), nullable=True)
+    user_last_name = Column(String(255), nullable=True)
+
     # 🔹 NEW
     data_from = Column(Date, nullable=False)
     data_to = Column(Date, nullable=False)
