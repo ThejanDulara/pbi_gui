@@ -1,0 +1,7 @@
+Flask
+Flask-Cors
+SQLAlchemy
+PyMySQL
+python-dotenv
+gunicorn
+cryptography>=41.0.0
