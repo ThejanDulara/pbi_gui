@@ -8,12 +8,12 @@ export async function checkAuth() {
   // Flask backend
   const apiBase = isLocal
     ? "http://localhost:8000/api"
-    : "https://mtmbackend-production.up.railway.app/api";
+    : "https://midasrndfrontendbackend-production.up.railway.app/api";
 
   // Main portal for login
   const portalBase = isLocal
     ? "http://localhost:5173"
-    : "https://www.mtmgroup.agency";
+    : "https://www.midasmedialk.agency";
 
   // 🔹 If localhost, skip auth check and return dummy admin
   if (isLocal) {
