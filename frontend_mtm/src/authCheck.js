@@ -13,7 +13,7 @@ export async function checkAuth() {
   // Main portal for login
   const portalBase = isLocal
     ? "http://localhost:5173"
-    : "https://www.mtmgroup.agency";
+    : "https://www.mediafactorylk.agency";
 
   // 🔹 If localhost, skip auth check and return dummy admin
   if (isLocal) {
